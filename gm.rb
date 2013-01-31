@@ -4,11 +4,11 @@ require 'base64'
 require 'json'
 require 'pp'
 require 'mhq'
-0998
+
 username = ''
 password = ''
 mongo_ini('', '')
-$json_opt_path = '/var/www/8GC/index.html'
+$json_opt_path = '/var/www/8GC/gm.html'
 
 def convert_month(month)
 	$m =  month
