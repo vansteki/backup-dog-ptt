@@ -358,8 +358,8 @@ begin
 	# 	exit
 	# end
 
-	pttID = 'gwave'
-	pttPASS = '1qaz2wsx'
+	pttID = ''
+	pttPASS = ''
 	tn = connect(23, 10, 1, 'ptt.cc')
 	start_time = now_time()
 	login(tn, pttID, pttPASS)
