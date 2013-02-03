@@ -358,14 +358,14 @@ begin
 	# 	exit
 	# end
 
-	pttID = ''
-	pttPASS = ''
+	pttID = 'gwave'
+	pttPASS = '1qaz2wsx'
 	tn = connect(23, 10, 1, 'ptt.cc')
 	start_time = now_time()
 	login(tn, pttID, pttPASS)
 	jump_board(tn, 'Gossiping')
-	search_by_hot(tn, 20)
-	for i in 1...5
+	search_by_hot(tn, 50)
+	for i in 1...21
 		sleep(10)
 		email_article(tn, "firedog977@gmail.com")
 		sleep(2)

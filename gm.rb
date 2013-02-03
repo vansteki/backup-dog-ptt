@@ -3,11 +3,12 @@ require 'gmail'
 require 'base64'
 require 'json'
 require 'pp'
-require 'mhq'
+require 'iconv'
+require 'msql.rb' #if run by crontab, use full path
 
-username = ''
-password = ''
-mongo_ini('', '')
+gmail_username = ''
+gmail_password = ''
+# mongo_ini('', '')
 $json_opt_path = '/var/www/8GC/gm.html'
 
 def convert_month(month)
@@ -45,13 +46,17 @@ end
 def make_list(s, cont_que)
 	date = nil
 	s.scan(/(作者:\s+(.*)\s+\(.*\).*\s*標題:\s+(.*\S)\s+時間:\s+\w+\s+(\w+)\s+(\d+).*(\d\d\d\d))\s*((.|\n)*)/){
-		|head, author, title, month, day, year, all|
+		|head, author, title, month, day, year, full_article|
 		month = convert_month(month)
 		date = "#{year}-#{month}-#{day}"
-		cont_que.push("head"=>head, "author"=>author, "title"=>title, "date"=>date, "all"=>all, "createTime"=>$createTime) #, "AID"=>aid
+		cont_que.push("head"=>head, "author"=>author, "title"=>title, "date"=>date, "full_article"=>full_article, "createTime"=>$createTime) #, "AID"=>aid
 	}
 	puts "\n article_info parse done\n"
 	pp cont_que
+end
+
+def day_add_zero(data)
+	puts data.size
 end
 
 def big5_2_utf8(data)
@@ -104,23 +109,23 @@ def dump_json(arr)
 end
 
 $createTime = now_time()
-Gmail.connect(username, password) do |gmail|
+Gmail.connect(gmail_username, gmail_password) do |gmail|
 	cont_que = []
 	cont = []
 	if gmail.logged_in?
 		puts "login! \n"
 	end
 	puts "work date is #{today()}"
-	#puts "mail received today: #{gmail.inbox.count(:on => Date.parse("2013-1-30"))} \n"
-	#gmail.inbox.count(:on => Date.parse("2013-1-30"))
-	#gmail.mailbox("Examination").emails.each do |email|
+
 	gmail.inbox.emails(:unread, :before => Date.parse(today()), :from => "*.bbs@ptt.cc").each do |email| 
 		#puts email.message.to_s
 		match = email.message.to_s.scan(/(p0CqzDog(.|\n)*)/) #p0CqzDog "作者"(big5) encoding of base64 at article header
 		cont = big5_2_utf8(clean_ansi_color(Base64.decode64(match.to_s)))
 		make_list(cont, cont_que)
+		email.unread!
 	end
-	#log(cont_que, "C:/xampp-portable/htdocs/origin.txt")
+
 	arr = dump_json(cont_que)
-	db_insert_data(arr)
+	#db_insert_data(arr)
+	insert_data(arr)
 end
