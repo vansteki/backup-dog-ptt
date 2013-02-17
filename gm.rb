@@ -117,12 +117,21 @@ Gmail.connect(gmail_username, gmail_password) do |gmail|
 	end
 	puts "work date is #{today()}"
 
-	gmail.inbox.emails(:unread, :before => Date.parse(today()), :from => "*.bbs@ptt.cc").each do |email| 
+	gmail.inbox.emails(:unread, :before => Date.parse(today()), :from => "*.bbs@ptt.cc").each do |email|
 		#puts email.message.to_s
-		match = email.message.to_s.scan(/(p0CqzDog(.|\n)*)/) #p0CqzDog "作者"(big5) encoding of base64 at article header
-		cont = big5_2_utf8(clean_ansi_color(Base64.decode64(match.to_s)))
-		make_list(cont, cont_que)
-		email.unread!
+		cte = email.message.to_s.scan(/Content-Transfer-Encoding:\s*(.*)/).to_s
+		if cte == "quoted-printable\r"
+			match = email.message.to_s.scan(/(=A7@=AA=CC:(.|\n)*)/)
+			c = match.to_s.unpack "M"
+			pp c
+			cont = big5_2_utf8(clean_ansi_color(c.to_s))
+			make_list(cont, cont_que)
+		else
+			match = email.message.to_s.scan(/(p0CqzDog(.|\n)*)|[a-zA-Z0-9+]{30,}/) #p0CqzDog "作者"(big5) encoding of base64 at article header
+			cont = big5_2_utf8(clean_ansi_color(Base64.decode64(match.to_s)))
+			make_list(cont, cont_que)
+		end
+		#email.unread!
 	end
 
 	arr = dump_json(cont_que)
