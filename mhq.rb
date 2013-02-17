@@ -17,7 +17,7 @@ def remove_coll()
 	@coll.remove
 end
 
-def db_insert_data(arr)
+def mongo_insert_data(arr)
 	begin
 		arr.each{  |m|
 			@coll.insert({
@@ -26,7 +26,7 @@ def db_insert_data(arr)
 				"head"=>	m['head'], 
 				"author"=>	m['author'],
 				"title"=>	m['title'],
-				"all"=>	m['all']
+				"full_article"=>	m['full_article']
 			})
 		}
 	rescue
