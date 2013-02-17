@@ -126,6 +126,6 @@ Gmail.connect(gmail_username, gmail_password) do |gmail|
 	end
 
 	arr = dump_json(cont_que)
-	#db_insert_data(arr)
+	#mongo_insert_data(arr)
 	insert_data(arr)
 end
