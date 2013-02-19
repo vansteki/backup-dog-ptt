@@ -120,8 +120,7 @@ Gmail.connect(gmail_username, gmail_password) do |gmail|
 	puts "work date is #{today()}"
 
 	gmail.inbox.emails(:unread, :before => Date.parse(today()), :from => "*.bbs@ptt.cc").each do |email|
-		puts email.message.to_s
-		log(email.message.to_s,"debug.log")
+		#puts email.message.to_s
 		cte = email.message.to_s.scan(/Content-Transfer-Encoding:\s*(.*)/).to_s
 		if cte == "quoted-printable\r"
 			match = email.message.to_s.scan(/(=A7@=AA=CC:(.|\n)*)/)
