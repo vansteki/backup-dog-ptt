@@ -1,3 +1,4 @@
+$DIR = File.expand_path(File.dirname(__FILE__)) + '/'
 require 'rubygems'
 require 'json'
 require 'net/telnet'
@@ -16,7 +17,7 @@ ArticleList = '\(b\)' + "#{AnsiSetDisplayAttr}" + '\xB6\x69\xAA\x4F\xB5\x65\xAD\
 Signature = '\xC3\xB1\xA6\x57\xC0\xC9\.(?>\d+).+' + "#{AnsiCursorHome}"
 EmailBox = '[a-zA-Z0-9._%+-]+@(?:[a-zA-Z0-9-]+\.)+[a-zA-Z]{2,4}'
 
-#$json_opt_path = "/var/www/8GC/gc.html"
+$json_opt_path = $DIR + "log.html"
 
 def connect(port, time_out, wait_time, host)
 	tn = Net::Telnet.new(
@@ -371,7 +372,7 @@ begin
 		sleep(2)
 		up(tn)
 	end
-	puts "\n crawer send at #{start_time} , mission complete at #{now_time()}\n"
+	puts "\n crawler send at #{start_time} , mission complete at #{now_time()}\n"
 
 end
 

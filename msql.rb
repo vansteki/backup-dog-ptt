@@ -1,8 +1,9 @@
+require 'rubygems'
 require 'mysql'
 
 db = Mysql.init  
 db.options(Mysql::SET_CHARSET_NAME,"utf8")  
-$con = db.real_connect('localhost', '[ID]', '[PASS]', '[DB]')
+$con = db.real_connect('localhost', '', '', '')
 
 def insert_data(arr)
 	pp arr

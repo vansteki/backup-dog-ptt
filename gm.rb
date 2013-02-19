@@ -1,15 +1,17 @@
+$DIR = File.expand_path(File.dirname(__FILE__)) + '/'
 require 'rubygems'
 require 'gmail'
 require 'base64'
 require 'json'
 require 'pp'
 require 'iconv'
-require 'msql.rb' #if run by crontab, use full path
+require $DIR + 'msql.rb' #if run by crontab, use full path
+require $DIR + 'mhq.rb' #if run by crontab, use full path
 
 gmail_username = ''
 gmail_password = ''
-# mongo_ini('', '')
-$json_opt_path = '/var/www/8GC/gm.html'
+mongo_ini('', '')
+$json_opt_path = $DIR + 'mailer.log'
 
 def convert_month(month)
 	$m =  month
@@ -96,16 +98,16 @@ def log(log, file_name="index.html")
 end
 
 def dump_json(arr)
-	begin
+	#begin
 		json = JSON.generate(arr)
 		pp arr
 		res = clean_utf8_space(add_br(json))
 		#puts JSON.pretty_generate(arr)
 		log(res, $json_opt_path)
 		return JSON.parse(res)
-	rescue
-		puts "\n nothing to dump! \n"
-	end
+	#rescue
+	#	puts "\n nothing to dump! \n"
+	#end
 end
 
 $createTime = now_time()
@@ -117,15 +119,28 @@ Gmail.connect(gmail_username, gmail_password) do |gmail|
 	end
 	puts "work date is #{today()}"
 
-	gmail.inbox.emails(:unread, :before => Date.parse(today()), :from => "*.bbs@ptt.cc").each do |email| 
-		#puts email.message.to_s
-		match = email.message.to_s.scan(/(p0CqzDog(.|\n)*)/) #p0CqzDog "作者"(big5) encoding of base64 at article header
-		cont = big5_2_utf8(clean_ansi_color(Base64.decode64(match.to_s)))
-		make_list(cont, cont_que)
-		email.unread!
+	gmail.inbox.emails(:unread, :before => Date.parse(today()), :from => "*.bbs@ptt.cc").each do |email|
+		puts email.message.to_s
+		log(email.message.to_s,"debug.log")
+		cte = email.message.to_s.scan(/Content-Transfer-Encoding:\s*(.*)/).to_s
+		if cte == "quoted-printable\r"
+			match = email.message.to_s.scan(/(=A7@=AA=CC:(.|\n)*)/)
+			c = match.to_s.unpack "M"
+			pp c
+			cont = big5_2_utf8(clean_ansi_color(c.to_s))
+			make_list(cont, cont_que)
+		else
+			match = email.message.to_s.scan(/(p0CqzDog(.|\n)*)|[a-zA-Z0-9+]{30,}/) #p0CqzDog "作者"(big5) encoding of base64 at article header
+			if match.size == 0
+				match = email.message.to_s.scan(/LS0tLS0t(.|\n)*/) #gmail 轉寄 gmail
+			end
+			cont = big5_2_utf8(clean_ansi_color(Base64.decode64(match.to_s)))
+			make_list(cont, cont_que)
+		end
+		#email.unread!
 	end
 
 	arr = dump_json(cont_que)
-	#db_insert_data(arr)
+	mongo_insert_data(arr)
 	insert_data(arr)
 end
